@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <!-- Rounded Squircle Base in brand terracotta -->
+  <rect width="128" height="128" rx="36" fill="url(#bgGrad)" />
+  <rect x="3" y="3" width="122" height="122" rx="33" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="3" />
+
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E2977E" />
+      <stop offset="100%" stop-color="#C5755D" />
+    </linearGradient>
+    <linearGradient id="hookMetal" x1="16" y1="112" x2="112" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFDF9" />
+      <stop offset="50%" stop-color="#EAD1AA" />
+      <stop offset="100%" stop-color="#FFF9ED" />
+    </linearGradient>
+    <filter id="softShadow" x="16" y="16" width="96" height="100" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#552B1E" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Crochet Hook (Slanted diagonally) -->
+  <g transform="rotate(-40 64 64)">
+    <!-- Hook Handle & Shaft -->
+    <rect x="59" y="14" width="10" height="100" rx="5" fill="url(#hookMetal)" />
+    <!-- Hook Throat & Lip -->
+    <path d="M59 24 C59 16 64 13 69 13 C71 13 72 15 69 17 C66 19 64 21 64 26" fill="#FFFDF9" />
+    <!-- Ergonomic Bamboo/Gold Grip -->
+    <rect x="57" y="64" width="14" height="24" rx="4" fill="#D8AC74" opacity="0.85" />
+  </g>
+
+  <!-- Yarn Ball with Shadow -->
+  <g filter="url(#softShadow)">
+    <!-- Base Yarn Ball Circle -->
+    <circle cx="64" cy="66" r="36" fill="#FFFBF7" />
+
+    <!-- Strands of Wound Yarn (Interlocking curved arcs in Terracotta and Sage) -->
+    <!-- Arc band 1 (Left curve) -->
+    <path d="M38 52 C44 38 68 38 78 48 C86 56 82 72 70 80 C58 88 44 80 40 68" stroke="#D98E73" stroke-width="6" stroke-linecap="round" fill="none" />
+    
+    <!-- Arc band 2 (Right curve) -->
+    <path d="M50 40 C66 40 86 52 86 68 C86 82 70 94 54 90 C42 86 36 72 44 58" stroke="#C5755D" stroke-width="5.5" stroke-linecap="round" fill="none" />
+
+    <!-- Arc band 3 (Diagonal cross wrap in Sage Green) -->
+    <path d="M42 46 C56 54 72 70 82 86" stroke="#4A5D45" stroke-width="5.5" stroke-linecap="round" fill="none" />
+
+    <!-- Arc band 4 (Center wrap) -->
+    <path d="M48 76 C58 78 72 72 80 60 C86 50 78 42 66 48" stroke="#D98E73" stroke-width="5" stroke-linecap="round" fill="none" />
+
+    <!-- Arc band 5 (Top contour) -->
+    <path d="M54 34 C64 36 74 42 80 50" stroke="#E2977E" stroke-width="4.5" stroke-linecap="round" fill="none" />
+    
+    <!-- Little Heart / Center Knot in Sage Green -->
+    <circle cx="64" cy="65" r="5" fill="#4A5D45" />
+  </g>
+
+  <!-- Flowing trailing yarn thread with little cute heart loop -->
+  <path d="M88 82 C98 90 106 84 102 74 C99 66 90 70 92 78" stroke="#FFFBF7" stroke-width="4.5" stroke-linecap="round" fill="none" />
+</svg>
