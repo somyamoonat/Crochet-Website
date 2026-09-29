@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGridSkeleton } from "@/components/product/product-skeleton";
+import { CategoryPills } from "@/components/product/category-pills";
 import {
   Container,
   Card,
@@ -271,6 +272,15 @@ export function ShopView({
               </select>
             </div>
           </div>
+        </div>
+
+        {/* Horizontal Swipeable Category Navigation Pills */}
+        <div className="pt-1">
+          <CategoryPills
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleCategoryChange}
+          />
         </div>
 
         {/* Active Filter Chips Bar */}

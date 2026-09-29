@@ -18,6 +18,8 @@ export interface CartItemState {
 
 interface CartStore {
   items: CartItemState[];
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
   addItem: (item: Omit<CartItemState, "quantity">, quantity?: number) => void;
   removeItem: (idOrProductId: string) => void;
   updateQuantity: (idOrProductId: string, quantity: number) => void;
@@ -32,6 +34,8 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      isCartOpen: false,
+      setIsCartOpen: (open: boolean) => set({ isCartOpen: open }),
       addItem: (item, quantity = 1) => {
         const currentItems = get().items;
         const targetId = item.id || `${item.productId}-${item.variantId || "standard"}`;
@@ -106,6 +110,7 @@ export const useCartStore = create<CartStore>()(
     {
       name: "the-crochet-diaryy-cart",
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ items: state.items }),
     }
   )
 );

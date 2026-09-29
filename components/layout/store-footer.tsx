@@ -6,7 +6,7 @@ import { InstagramIcon } from "@/components/ui/icons";
 
 export function StoreFooter() {
   return (
-    <footer className="border-t border-[#EAE1D3] bg-[#FAF3EA] pt-12 pb-8 text-stone-700">
+    <footer className="border-t border-[#EAE1D3] bg-[#FAF3EA] pt-12 pb-24 md:pb-8 text-stone-700">
       <Container size="lg" className="space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* Brand column */}

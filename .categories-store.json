@@ -1,0 +1,37 @@
+[
+  {
+    "id": "cat_amigurumi",
+    "name": "Amigurumi & Toys",
+    "slug": "amigurumi-toys",
+    "description": "Cute handcrafted plushies, safe for all ages made with hypoallergenic soft yarn.",
+    "image": "https://placehold.co/600x600/FAF1EA/D98E73?text=Amigurumi+%26+Toys"
+  },
+  {
+    "id": "cat_bags",
+    "name": "Bags & Pouches",
+    "slug": "bags-pouches",
+    "description": "Aesthetic crochet shoulder bags, granny square totes, and zippered coin pouches.",
+    "image": "https://placehold.co/600x600/FAF1EA/4A5D45?text=Bags+%26+Pouches"
+  },
+  {
+    "id": "cat_decor",
+    "name": "Home Decor",
+    "slug": "home-decor",
+    "description": "Handmade everlasting flower bouquets, coasters, and cozy botanical accents.",
+    "image": "https://placehold.co/600x600/FAF1EA/E8B4B8?text=Home+Decor"
+  },
+  {
+    "id": "cat_apparel",
+    "name": "Apparel & Accessories",
+    "slug": "apparel-accessories",
+    "description": "Crochet bucket hats, bandanas, fingerless mitts, and lightweight tops.",
+    "image": "https://placehold.co/600x600/FAF1EA/5C4033?text=Apparel+%26+Accessories"
+  },
+  {
+    "id": "cat_keychains",
+    "name": "Keychains & Gifting",
+    "slug": "keychains-gifting",
+    "description": "Charming handcrafted bag charms, keyrings, and miniature gifting keepsakes.",
+    "image": "https://placehold.co/600x600/FAF1EA/D98E73?text=Keychains+%26+Gifting"
+  }
+]

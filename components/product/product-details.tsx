@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatINR } from "@/lib/utils";
@@ -406,6 +407,87 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           <div>
             <p className="text-xs font-bold text-brand-text">Careful Packaging</p>
             <p className="text-[10px] text-stone-500">Gift-ready in tissue</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Product Action Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#ECE2D2] px-4 py-2.5 shadow-[0_-4px_24px_rgba(43,36,32,0.08)] pb-[calc(env(safe-area-inset-bottom,0px)+8px)]">
+        <div className="flex items-center justify-between gap-3">
+          {/* Mini Thumbnail & Price */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            {product.images && product.images.length > 0 && (
+              <div className="relative h-11 w-11 rounded-xl overflow-hidden bg-[#FAF1EA] shrink-0 border border-stone-200">
+                <Image
+                  src={product.images[0]}
+                  alt={product.name}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  sizes="44px"
+                />
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-brand-text truncate leading-tight">
+                {product.name}
+              </p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-sm font-extrabold text-brand-primary">
+                  {formatINR(effectivePrice)}
+                </span>
+                {compareAtPrice && compareAtPrice > effectivePrice && (
+                  <span className="text-[10px] text-stone-400 line-through">
+                    {formatINR(compareAtPrice)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 shrink-0">
+            {isCustomOrUnpriced ? (
+              <a
+                href={whatsappEnquiryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 rounded-full bg-[#25D366] text-white px-4 py-2 text-xs font-bold shadow-xs active:scale-95 transition"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>Enquire</span>
+              </a>
+            ) : isInCart ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleProceedToCheckout}
+                className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs py-2 px-4 shadow-sm"
+                rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+              >
+                Checkout
+              </Button>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="h-9 w-9 rounded-full border border-brand-primary text-brand-primary hover:bg-[#FAF1EA] flex items-center justify-center transition active:scale-95 shadow-2xs cursor-pointer"
+                  aria-label="Add to Basket"
+                >
+                  {isAdded ? <Check className="h-4 w-4 stroke-[3]" /> : <ShoppingBag className="h-4 w-4" />}
+                </button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleBuyNow}
+                  className="font-bold text-xs py-2 px-3.5 shadow-sm active:scale-95"
+                  rightIcon={<Zap className="h-3.5 w-3.5 fill-current" />}
+                >
+                  Buy Now
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-bg: #FBF6EF;
+  --color-brand-text: #2B2420;
+  --color-brand-primary: #D98E73;
+  --color-brand-secondary: #4A5D45;
+  --color-brand-accent: #E8B4B8;
+  --color-brand-cocoa: #5C4033;
+
+  --font-heading: var(--font-heading), "Fraunces", Georgia, serif;
+  --font-body: var(--font-body), "Nunito", system-ui, sans-serif;
+  --font-handwriting: var(--font-handwriting), "Caveat", cursive;
+}
+
+:root {
+  --brand-bg: #FBF6EF;
+  --brand-text: #2B2420;
+  --brand-primary: #D98E73;
+  --brand-secondary: #4A5D45;
+  --brand-accent: #E8B4B8;
+  --brand-cocoa: #5C4033;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom focus ring utility for warm boutique aesthetic */
+:focus-visible {
+  outline: 2px solid #D98E73;
+  outline-offset: 2px;
+}

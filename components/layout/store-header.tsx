@@ -9,7 +9,8 @@ import { ShoppingBag, User, Menu, X, MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/icons";
 
 export function StoreHeader() {
-  const [isCartOpen, setIsCartOpen] = React.useState(false);
+  const isCartOpen = useCartStore((state) => state.isCartOpen);
+  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const { data: session } = useSession();
   const totalItems = useCartStore((state) => state.getTotalItems());

@@ -1,0 +1,47 @@
+[
+  {
+    "orderNumber": "CD-9309-8653",
+    "userId": null,
+    "guestName": "SOMYA Moonat",
+    "guestPhone": "09294761215",
+    "guestEmail": null,
+    "status": "RECEIVED",
+    "deliveryType": "DELIVERY",
+    "addressDetails": {
+      "line1": "State Highway 17",
+      "line2": "",
+      "city": "Ratlam",
+      "pincode": "457001"
+    },
+    "subtotal": 498,
+    "deliveryFee": 50,
+    "total": 548,
+    "paymentMethod": "RAZORPAY",
+    "paymentStatus": "PENDING",
+    "notes": "{\"line1\":\"State Highway 17\",\"line2\":\"\",\"city\":\"Ratlam\",\"pincode\":\"457001\",\"customerNotes\":\"\"}",
+    "items": [
+      {
+        "id": "item_1790663898727_0",
+        "orderId": "",
+        "productId": "prod_1790588038332",
+        "variantId": null,
+        "nameSnapshot": "Mini Avocado Charm & Keychain",
+        "priceSnapshot": 249,
+        "quantity": 1,
+        "imageSnapshot": "/images/instagram/avocado-keychain.jpg"
+      },
+      {
+        "id": "item_1790663898727_1",
+        "orderId": "",
+        "productId": "prod_avocado_charm",
+        "variantId": null,
+        "nameSnapshot": "Mini Avocado Bag Charm & Keychain",
+        "priceSnapshot": 249,
+        "quantity": 1,
+        "imageSnapshot": "/images/instagram/avocado-keychain.jpg"
+      }
+    ],
+    "id": "ord_1790663898727_decix",
+    "createdAt": "2026-09-29T06:38:18.727Z"
+  }
+]

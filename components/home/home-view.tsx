@@ -161,10 +161,11 @@ export function HomeView({ initialProducts, initialCategories }: HomeViewProps) 
                   {/* Primary Featured Image */}
                   <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden border-2 border-[#ECE2D2] shadow-xl bg-white">
                     <Image
-                      src="https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=1000"
+                      src="/images/hero-showcase.jpg"
                       alt="Handmade Pastel Crochet Bouquet crafted by Nitika Tanted"
                       fill
                       priority
+                      unoptimized
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover"
                     />
@@ -311,12 +312,12 @@ export function HomeView({ initialProducts, initialCategories }: HomeViewProps) 
               description="Discover handcrafted pieces lovingly made for every corner of your life."
             />
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-3 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-4 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
               {categories.map((category) => (
                 <Link
                   key={category.slug}
                   href={`/shop/${category.slug}`}
-                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-[#ECE2D2] bg-white p-3 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/50 hover:shadow-md"
+                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-[#ECE2D2] bg-white p-3 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/50 hover:shadow-md shrink-0 w-[145px] sm:w-auto"
                 >
                   <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#F6EFE6]">
                     <Image

@@ -58,7 +58,7 @@ export function WhatsAppButton() {
         }, 120);
       }}
       aria-label="Draggable WhatsApp Contact"
-      className="fixed z-40 touch-none select-none cursor-grab active:cursor-grabbing flex items-center"
+      className="fixed z-40 touch-none select-none cursor-grab active:cursor-grabbing hidden md:flex items-center"
       style={{
         bottom: "24px",
         right: "24px",
