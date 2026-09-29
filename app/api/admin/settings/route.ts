@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isSessionAdmin } from "@/lib/auth.config";
 import { getStoreSettings, updateStoreSettings } from "@/lib/admin-store";
+import { revalidateStoreCatalog } from "@/lib/revalidate";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -30,6 +34,8 @@ export async function POST(req: NextRequest) {
       founderName: body.founderName?.trim() || "Nitika Tanted",
       studioAddressNote: body.studioAddressNote?.trim() || "",
     });
+
+    revalidateStoreCatalog();
 
     return NextResponse.json({ success: true, settings: updated });
   } catch (error) {

@@ -7,6 +7,10 @@ import {
   deleteAdminProduct,
   AdminProductInput,
 } from "@/lib/admin-store";
+import { revalidateStoreCatalog } from "@/lib/revalidate";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(
   _req: NextRequest,
@@ -50,6 +54,12 @@ export async function PUT(
       return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
     }
 
+    // Immediately purge and revalidate customer storefront cache
+    revalidateStoreCatalog({
+      productSlug: updated.slug,
+      categorySlug: updated.categorySlug,
+    });
+
     return NextResponse.json({ success: true, product: updated });
   } catch (error) {
     console.error("PUT /api/admin/products/[id] error:", error);
@@ -68,11 +78,18 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const existing = await getAdminProductById(id);
     const deleted = await deleteAdminProduct(id);
 
     if (!deleted) {
       return NextResponse.json({ success: false, error: "Product not found or delete failed" }, { status: 404 });
     }
+
+    // Immediately purge and revalidate customer storefront cache
+    revalidateStoreCatalog({
+      productSlug: existing?.slug,
+      categorySlug: existing?.categorySlug,
+    });
 
     return NextResponse.json({ success: true, message: "Product deleted successfully" });
   } catch (error) {

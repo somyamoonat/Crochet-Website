@@ -39,26 +39,72 @@ export interface FallbackOrder {
   items: FallbackOrderItem[];
 }
 
-const ORDERS_FILE = path.join(process.cwd(), ".orders-store.json");
+function getOrdersFilePath(): string {
+  const isServerless = Boolean(
+    process.env.VERCEL ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.LAMBDA_TASK_ROOT
+  );
+
+  if (isServerless) {
+    const tmpPath = path.join("/tmp", ".orders-store.json");
+    if (!fs.existsSync(tmpPath)) {
+      const bundledPath = path.join(process.cwd(), ".orders-store.json");
+      try {
+        if (fs.existsSync(bundledPath)) {
+          fs.copyFileSync(bundledPath, tmpPath);
+        }
+      } catch (err) {
+        console.warn("Could not seed /tmp/.orders-store.json:", err);
+      }
+    }
+    return tmpPath;
+  }
+
+  return path.join(process.cwd(), ".orders-store.json");
+}
 
 function loadOrdersFromFile(): FallbackOrder[] {
+  const filePath = getOrdersFilePath();
   try {
-    if (fs.existsSync(ORDERS_FILE)) {
-      const data = fs.readFileSync(ORDERS_FILE, "utf-8");
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, "utf-8");
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed)) return parsed;
     }
   } catch (err) {
-    console.warn("Could not read .orders-store.json:", err);
+    console.warn("Could not read orders from file:", err);
   }
+
+  // Also check /tmp fallback if filePath wasn't in /tmp
+  const tmpFallback = path.join("/tmp", ".orders-store.json");
+  if (filePath !== tmpFallback) {
+    try {
+      if (fs.existsSync(tmpFallback)) {
+        const data = fs.readFileSync(tmpFallback, "utf-8");
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   return [];
 }
 
 function persistOrdersToFile(orders: FallbackOrder[]) {
+  const filePath = getOrdersFilePath();
   try {
-    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf-8");
+    fs.writeFileSync(filePath, JSON.stringify(orders, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Could not write .orders-store.json:", err);
+    console.warn("Could not write orders file:", err);
+    try {
+      const fallbackTmp = path.join("/tmp", ".orders-store.json");
+      fs.writeFileSync(fallbackTmp, JSON.stringify(orders, null, 2), "utf-8");
+    } catch {
+      // ignore
+    }
   }
 }
 

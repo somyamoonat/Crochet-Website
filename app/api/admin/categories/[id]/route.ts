@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isSessionAdmin } from "@/lib/auth.config";
 import { updateAdminCategory, deleteAdminCategory, AdminCategoryInput } from "@/lib/admin-store";
+import { revalidateStoreCatalog } from "@/lib/revalidate";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function PUT(
   req: NextRequest,
@@ -20,6 +24,8 @@ export async function PUT(
     if (!updated) {
       return NextResponse.json({ success: false, error: "Category not found" }, { status: 404 });
     }
+
+    revalidateStoreCatalog({ categorySlug: updated.slug });
 
     return NextResponse.json({ success: true, category: updated });
   } catch (error) {
@@ -44,6 +50,8 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ success: false, error: "Category not found or delete failed" }, { status: 404 });
     }
+
+    revalidateStoreCatalog();
 
     return NextResponse.json({ success: true, message: "Category deleted successfully" });
   } catch (error) {

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isSessionAdmin } from "@/lib/auth.config";
 import { getAdminProducts, createAdminProduct, AdminProductInput } from "@/lib/admin-store";
+import { revalidateStoreCatalog } from "@/lib/revalidate";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -35,6 +39,13 @@ export async function POST(req: NextRequest) {
     }
 
     const product = await createAdminProduct(body);
+
+    // Purge cached static pages and APIs
+    revalidateStoreCatalog({
+      productSlug: product.slug,
+      categorySlug: product.categorySlug,
+    });
+
     return NextResponse.json({ success: true, product });
   } catch (error) {
     console.error("POST /api/admin/products error:", error);

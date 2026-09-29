@@ -72,52 +72,133 @@ const defaultSettings: StoreSettings = {
    PERSISTENT JSON STORAGE FOR LOCAL DEV & PERSISTENCE ACROSS RESTARTS
    ========================================================================= */
 
-const PRODUCTS_FILE = path.join(process.cwd(), ".products-store.json");
-const CATEGORIES_FILE = path.join(process.cwd(), ".categories-store.json");
-const SETTINGS_FILE = path.join(process.cwd(), ".settings-store.json");
+interface GlobalAdminStore {
+  __adminProducts?: SeedProduct[];
+  __adminCategories?: SeedCategory[];
+  __adminSettings?: StoreSettings;
+}
 
-function loadFileStore<T>(filePath: string, fallback: T): T {
+const gAdmin = globalThis as unknown as GlobalAdminStore;
+
+function getStoreFilePath(fileName: string): string {
+  const isServerless = Boolean(
+    process.env.VERCEL ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.LAMBDA_TASK_ROOT
+  );
+
+  if (isServerless) {
+    const tmpPath = path.join("/tmp", fileName);
+    if (!fs.existsSync(tmpPath)) {
+      const bundledPath = path.join(process.cwd(), fileName);
+      try {
+        if (fs.existsSync(bundledPath)) {
+          fs.copyFileSync(bundledPath, tmpPath);
+        }
+      } catch (err) {
+        console.warn(`Could not seed ${tmpPath} from ${bundledPath}:`, err);
+      }
+    }
+    return tmpPath;
+  }
+
+  return path.join(process.cwd(), fileName);
+}
+
+function loadFileStore<T>(fileName: string, fallback: T): T {
+  const targetPath = getStoreFilePath(fileName);
   try {
-    if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, "utf-8");
+    if (fs.existsSync(targetPath)) {
+      const data = fs.readFileSync(targetPath, "utf-8");
       const parsed = JSON.parse(data);
       if (parsed !== undefined && parsed !== null) return parsed;
     }
   } catch (err) {
-    console.warn(`Could not read ${filePath}:`, err);
+    console.warn(`Could not read ${targetPath}:`, err);
   }
+
+  // Also check /tmp if targetPath was not already /tmp
+  const tmpFallback = path.join("/tmp", fileName);
+  if (targetPath !== tmpFallback) {
+    try {
+      if (fs.existsSync(tmpFallback)) {
+        const data = fs.readFileSync(tmpFallback, "utf-8");
+        const parsed = JSON.parse(data);
+        if (parsed !== undefined && parsed !== null) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Check bundled file in process.cwd()
+  const bundledPath = path.join(process.cwd(), fileName);
+  if (targetPath !== bundledPath) {
+    try {
+      if (fs.existsSync(bundledPath)) {
+        const data = fs.readFileSync(bundledPath, "utf-8");
+        const parsed = JSON.parse(data);
+        if (parsed !== undefined && parsed !== null) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   const defaultVal = JSON.parse(JSON.stringify(fallback));
   try {
-    fs.writeFileSync(filePath, JSON.stringify(defaultVal, null, 2), "utf-8");
+    fs.writeFileSync(targetPath, JSON.stringify(defaultVal, null, 2), "utf-8");
   } catch {
-    // ignore
+    try {
+      fs.writeFileSync(tmpFallback, JSON.stringify(defaultVal, null, 2), "utf-8");
+    } catch {
+      // ignore
+    }
   }
   return defaultVal;
 }
 
-function saveFileStore<T>(filePath: string, data: T) {
+function saveFileStore<T>(fileName: string, data: T) {
+  const targetPath = getStoreFilePath(fileName);
   try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+    fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), "utf-8");
   } catch (err) {
-    console.warn(`Could not write ${filePath}:`, err);
+    console.warn(`Could not write ${targetPath}:`, err);
+    try {
+      const fallbackTmp = path.join("/tmp", fileName);
+      fs.writeFileSync(fallbackTmp, JSON.stringify(data, null, 2), "utf-8");
+    } catch {
+      // ignore
+    }
   }
 }
 
-
 function getLocalProducts(): SeedProduct[] {
-  return loadFileStore<SeedProduct[]>(PRODUCTS_FILE, sampleProducts);
+  if (gAdmin.__adminProducts && Array.isArray(gAdmin.__adminProducts) && gAdmin.__adminProducts.length > 0) {
+    return JSON.parse(JSON.stringify(gAdmin.__adminProducts));
+  }
+  const loaded = loadFileStore<SeedProduct[]>(".products-store.json", sampleProducts);
+  gAdmin.__adminProducts = loaded;
+  return JSON.parse(JSON.stringify(loaded));
 }
 
 function setLocalProducts(products: SeedProduct[]) {
-  saveFileStore(PRODUCTS_FILE, products);
+  gAdmin.__adminProducts = JSON.parse(JSON.stringify(products));
+  saveFileStore(".products-store.json", products);
 }
 
 function getLocalCategories(): SeedCategory[] {
-  return loadFileStore<SeedCategory[]>(CATEGORIES_FILE, sampleCategories);
+  if (gAdmin.__adminCategories && Array.isArray(gAdmin.__adminCategories) && gAdmin.__adminCategories.length > 0) {
+    return JSON.parse(JSON.stringify(gAdmin.__adminCategories));
+  }
+  const loaded = loadFileStore<SeedCategory[]>(".categories-store.json", sampleCategories);
+  gAdmin.__adminCategories = loaded;
+  return JSON.parse(JSON.stringify(loaded));
 }
 
 function setLocalCategories(categories: SeedCategory[]) {
-  saveFileStore(CATEGORIES_FILE, categories);
+  gAdmin.__adminCategories = JSON.parse(JSON.stringify(categories));
+  saveFileStore(".categories-store.json", categories);
 }
 
 /* =========================================================================
@@ -125,7 +206,12 @@ function setLocalCategories(categories: SeedCategory[]) {
    ========================================================================= */
 
 export async function getStoreSettings(): Promise<StoreSettings> {
-  return loadFileStore<StoreSettings>(SETTINGS_FILE, defaultSettings);
+  if (gAdmin.__adminSettings) {
+    return { ...gAdmin.__adminSettings };
+  }
+  const loaded = loadFileStore<StoreSettings>(".settings-store.json", defaultSettings);
+  gAdmin.__adminSettings = loaded;
+  return { ...loaded };
 }
 
 export async function updateStoreSettings(updates: Partial<StoreSettings>): Promise<StoreSettings> {
@@ -134,7 +220,8 @@ export async function updateStoreSettings(updates: Partial<StoreSettings>): Prom
     ...current,
     ...updates,
   };
-  saveFileStore(SETTINGS_FILE, updated);
+  gAdmin.__adminSettings = updated;
+  saveFileStore(".settings-store.json", updated);
   return updated;
 }
 
@@ -213,21 +300,29 @@ export async function updateAdminCategory(
   input: Partial<AdminCategoryInput>
 ): Promise<SeedCategory | null> {
   try {
-    const dbPromise = prisma.category.update({
-      where: { id },
-      data: {
-        name: input.name,
-        slug: input.slug,
-        description: input.description,
-        image: input.image,
+    const existingDbCat = await prisma.category.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
       },
     });
-    await Promise.race([
-      dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
-    ]);
+
+    if (existingDbCat) {
+      const dbPromise = prisma.category.update({
+        where: { id: existingDbCat.id },
+        data: {
+          name: input.name,
+          slug: input.slug,
+          description: input.description,
+          image: input.image,
+        },
+      });
+      await Promise.race([
+        dbPromise.catch(() => null),
+        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      ]);
+    }
   } catch (err) {
-    console.warn("DB unreachable in updateAdminCategory, updating local store:", err);
+    console.warn("DB unreachable or error in updateAdminCategory, updating local store:", err);
   }
 
   const list = getLocalCategories();
@@ -248,13 +343,21 @@ export async function updateAdminCategory(
 
 export async function deleteAdminCategory(id: string): Promise<boolean> {
   try {
-    const dbPromise = prisma.category.delete({ where: { id } });
-    await Promise.race([
-      dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
-    ]);
+    const existingDbCat = await prisma.category.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
+    });
+
+    if (existingDbCat) {
+      const dbPromise = prisma.category.delete({ where: { id: existingDbCat.id } });
+      await Promise.race([
+        dbPromise.catch(() => null),
+        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      ]);
+    }
   } catch (err) {
-    console.warn("DB unreachable in deleteAdminCategory, deleting from local store:", err);
+    console.warn("DB unreachable or error in deleteAdminCategory, deleting from local store:", err);
   }
 
   const list = getLocalCategories();
@@ -446,31 +549,39 @@ export async function updateAdminProduct(
       ? await prisma.category.findUnique({ where: { slug: input.categorySlug } })
       : null;
 
-    const dbPromise = prisma.product.update({
-      where: { id },
-      data: {
-        name: input.name,
-        slug: input.slug,
-        description: input.description,
-        price: input.price !== undefined ? (input.price ?? 0) : undefined,
-        compareAtPrice: input.compareAtPrice,
-        categoryId: category ? category.id : undefined,
-        images: input.images,
-        stockType: input.stockType,
-        stockQty: input.stockType === "READY_TO_SHIP" ? input.stockQty : null,
-        leadTimeDays: input.stockType === "MADE_TO_ORDER" ? input.leadTimeDays : null,
-        isFeatured: input.isFeatured,
-        isActive: input.isActive,
+    const existingDbProduct = await prisma.product.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
       },
-      include: { category: true, variants: true },
     });
 
-    await Promise.race([
-      dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
-    ]);
+    if (existingDbProduct) {
+      const dbPromise = prisma.product.update({
+        where: { id: existingDbProduct.id },
+        data: {
+          name: input.name,
+          slug: input.slug,
+          description: input.description,
+          price: input.price !== undefined ? (input.price ?? 0) : undefined,
+          compareAtPrice: input.compareAtPrice,
+          categoryId: category ? category.id : undefined,
+          images: input.images,
+          stockType: input.stockType,
+          stockQty: input.stockType === "READY_TO_SHIP" ? input.stockQty : null,
+          leadTimeDays: input.stockType === "MADE_TO_ORDER" ? input.leadTimeDays : null,
+          isFeatured: input.isFeatured,
+          isActive: input.isActive,
+        },
+        include: { category: true, variants: true },
+      });
+
+      await Promise.race([
+        dbPromise.catch(() => null),
+        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      ]);
+    }
   } catch (err) {
-    console.warn("DB unreachable in updateAdminProduct, updating local store:", err);
+    console.warn("DB unreachable or error in updateAdminProduct, updating local store:", err);
   }
 
   const list = getLocalProducts();
@@ -509,13 +620,21 @@ export async function updateAdminProduct(
 
 export async function deleteAdminProduct(id: string): Promise<boolean> {
   try {
-    const dbPromise = prisma.product.delete({ where: { id } });
-    await Promise.race([
-      dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
-    ]);
+    const existingDbProduct = await prisma.product.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
+    });
+
+    if (existingDbProduct) {
+      const dbPromise = prisma.product.delete({ where: { id: existingDbProduct.id } });
+      await Promise.race([
+        dbPromise.catch(() => null),
+        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      ]);
+    }
   } catch (err) {
-    console.warn("DB unreachable in deleteAdminProduct, deleting from local store:", err);
+    console.warn("DB unreachable or error in deleteAdminProduct, deleting from local store:", err);
   }
 
   const list = getLocalProducts();

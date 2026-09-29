@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { isSessionAdmin } from "@/lib/auth.config";
 import { getDashboardMetrics } from "@/lib/admin-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const session = await auth();

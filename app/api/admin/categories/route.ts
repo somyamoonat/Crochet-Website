@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isSessionAdmin } from "@/lib/auth.config";
 import { getAdminCategories, createAdminCategory, AdminCategoryInput } from "@/lib/admin-store";
+import { revalidateStoreCatalog } from "@/lib/revalidate";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -32,6 +36,9 @@ export async function POST(req: NextRequest) {
     }
 
     const category = await createAdminCategory(body);
+
+    revalidateStoreCatalog({ categorySlug: category.slug });
+
     return NextResponse.json({ success: true, category });
   } catch (error) {
     console.error("POST /api/admin/categories error:", error);
