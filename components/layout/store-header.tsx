@@ -100,7 +100,7 @@ export function StoreHeader() {
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative flex items-center justify-center h-10 w-10 rounded-full bg-brand-text text-white hover:bg-brand-primary transition-all duration-200 active:scale-95 shadow-xs cursor-pointer"
-              aria-label={`Open Cart (${mounted ? totalItems : 0} items)`}
+              aria-label="Open Cart"
             >
               <ShoppingBag className="h-4 w-4" />
               {mounted && totalItems > 0 && (

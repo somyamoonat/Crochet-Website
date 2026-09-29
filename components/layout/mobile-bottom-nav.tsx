@@ -96,7 +96,7 @@ export function MobileBottomNav() {
             type="button"
             onClick={() => setIsCartOpen(true)}
             className="relative flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-stone-500 hover:text-brand-primary transition duration-150 cursor-pointer"
-            aria-label={`Open shopping basket with ${totalItems} items`}
+            aria-label="Open shopping basket"
           >
             <div className="relative">
               <ShoppingBag className="h-5 w-5 stroke-[1.8]" />
