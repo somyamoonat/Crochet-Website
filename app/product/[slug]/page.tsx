@@ -11,6 +11,9 @@ import { Container, StitchDivider, SectionHeading } from "@/components/ui";
 import { getProductBySlug } from "@/lib/products";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface ProductPageProps {
   params: Promise<{
     slug: string;

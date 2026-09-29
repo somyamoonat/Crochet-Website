@@ -5,6 +5,9 @@ import { StoreFooter } from "@/components/layout/store-footer";
 import { ShopView } from "@/components/product/shop-view";
 import { getAdminProducts, getAdminCategories } from "@/lib/admin-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Shop Handcrafted Crochet | The Crochet Diaryy",
   description:

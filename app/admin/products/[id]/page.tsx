@@ -5,6 +5,9 @@ import { Container } from "@/components/ui";
 import { ProductForm } from "@/components/admin/product-form";
 import { getAdminProductById } from "@/lib/admin-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface EditProductPageProps {
   params: Promise<{
     id: string;

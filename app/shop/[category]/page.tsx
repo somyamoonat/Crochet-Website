@@ -6,6 +6,9 @@ import { StoreFooter } from "@/components/layout/store-footer";
 import { ShopView } from "@/components/product/shop-view";
 import { getAdminCategories, getAdminProducts } from "@/lib/admin-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface CategoryPageProps {
   params: Promise<{
     category: string;

@@ -60,8 +60,8 @@ export function ShopView({
     async function loadFresh() {
       try {
         const [prodRes, catRes] = await Promise.all([
-          fetch("/api/products?limit=100"),
-          fetch("/api/categories"),
+          fetch("/api/products?limit=100", { cache: "no-store" }),
+          fetch("/api/categories", { cache: "no-store" }),
         ]);
         if (prodRes.ok && !isCancelled) {
           const prodData = await prodRes.json();
