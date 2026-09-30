@@ -1,0 +1,17 @@
+[
+  {
+    "id": "addr_1790706375310_def",
+    "userId": "user_admin_nitika",
+    "recipientName": "Nitika Tanted (Founder & Admin)",
+    "phone": "+91 98765 43210",
+    "label": "Default Delivery",
+    "line1": "Local Address",
+    "line2": "Near Clock Tower",
+    "city": "Ratlam",
+    "state": "Madhya Pradesh",
+    "pincode": "457001",
+    "isDefault": true,
+    "createdAt": "2026-09-29T18:26:15.310Z",
+    "updatedAt": "2026-09-29T18:26:15.310Z"
+  }
+]
