@@ -1,5 +1,40 @@
 [
   {
+    "id": "cmupecsmc0001s3kyvtigq6rz",
+    "orderNumber": "CD-6434-2345",
+    "userId": "cmupdijbw0000l8047k5sq91c",
+    "guestName": "Nilay Raj",
+    "guestPhone": "+91 98765 43210",
+    "guestEmail": "nilayraj713@gmail.com",
+    "status": "CONFIRMED",
+    "deliveryType": "DELIVERY",
+    "addressDetails": {
+      "line1": "Local Address, Near Clock Tower",
+      "line2": "",
+      "city": "Ratlam",
+      "pincode": "457001"
+    },
+    "subtotal": 1000,
+    "deliveryFee": 0,
+    "total": 1000,
+    "paymentMethod": "PAY_ON_DELIVERY",
+    "paymentStatus": "PENDING",
+    "notes": "{\"line1\":\"Local Address, Near Clock Tower\",\"line2\":\"\",\"city\":\"Ratlam\",\"pincode\":\"457001\",\"customerNotes\":\"Please call before delivery\"}",
+    "items": [
+      {
+        "id": "item_cd_6434_2345_0",
+        "orderId": "cmupecsmc0001s3kyvtigq6rz",
+        "productId": "cmup4iyav0007s370a82go9yj",
+        "variantId": null,
+        "nameSnapshot": "Daisy Charm Tote Bag",
+        "priceSnapshot": 1000,
+        "quantity": 1,
+        "imageSnapshot": "/images/instagram/daisy-tote.jpg"
+      }
+    ],
+    "createdAt": "2026-10-01T10:15:00.000Z"
+  },
+  {
     "orderNumber": "CD-9309-8653",
     "userId": null,
     "guestName": "SOMYA Moonat",

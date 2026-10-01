@@ -132,20 +132,27 @@ export function saveFallbackOrder(order: Omit<FallbackOrder, "id" | "createdAt">
 }
 
 export function getFallbackOrderById(id: string): FallbackOrder | undefined {
-  const currentList = globalForFallback.fallbackOrders || [];
-  return currentList.find((o) => o.id === id || o.orderNumber === id);
+  const currentList = getAllFallbackOrders();
+  const cleaned = id.trim().toLowerCase();
+  return currentList.find(
+    (o) => o.id.toLowerCase() === cleaned || o.orderNumber.toLowerCase() === cleaned
+  );
 }
 
 export function getFallbackOrderByOrderNumber(orderNumber: string): FallbackOrder | undefined {
-  const currentList = globalForFallback.fallbackOrders || [];
-  return currentList.find((o) => o.orderNumber.toLowerCase() === orderNumber.toLowerCase() || o.id === orderNumber);
+  const currentList = getAllFallbackOrders();
+  const cleaned = orderNumber.trim().toLowerCase();
+  return currentList.find(
+    (o) => o.orderNumber.toLowerCase() === cleaned || o.id.toLowerCase() === cleaned
+  );
 }
 
-export function getFallbackOrdersByUserId(userId: string, email?: string | null): FallbackOrder[] {
-  const currentList = globalForFallback.fallbackOrders || [];
+export function getFallbackOrdersByUserId(userId?: string | null, email?: string | null): FallbackOrder[] {
+  const currentList = getAllFallbackOrders();
+  const cleanedEmail = email?.trim().toLowerCase();
   return currentList.filter((o) => {
-    if (o.userId && o.userId === userId) return true;
-    if (email && o.guestEmail && o.guestEmail.toLowerCase() === email.toLowerCase()) return true;
+    if (userId && o.userId && o.userId === userId) return true;
+    if (cleanedEmail && o.guestEmail && o.guestEmail.trim().toLowerCase() === cleanedEmail) return true;
     return false;
   });
 }

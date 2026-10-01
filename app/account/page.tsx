@@ -91,7 +91,7 @@ export default function AccountPage() {
   const loadRecentOrders = React.useCallback(async () => {
     try {
       setIsLoadingOrders(true);
-      const res = await fetch("/api/orders");
+      const res = await fetch("/api/orders", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.orders)) {

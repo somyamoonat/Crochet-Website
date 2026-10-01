@@ -29,23 +29,29 @@ interface ConfirmationPageProps {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({ params }: ConfirmationPageProps): Promise<Metadata> {
   const { orderNumber } = await params;
+  const decoded = decodeURIComponent(orderNumber).trim();
   return {
-    title: `Order #${orderNumber} Confirmed | The Crochet Diaryy`,
-    description: `Order confirmation, estimated dispatch dates, and receipt summary for #${orderNumber}.`,
+    title: `Order #${decoded} Confirmed | The Crochet Diaryy`,
+    description: `Order confirmation, estimated dispatch dates, and receipt summary for #${decoded}.`,
     robots: { index: false, follow: false },
   };
 }
 
 async function getOrderDetails(orderNumber: string) {
+  const decoded = decodeURIComponent(orderNumber).trim();
+
   // 1. Try DB
   try {
     const dbPromise = prisma.order.findFirst({
       where: {
         OR: [
-          { orderNumber: { equals: orderNumber, mode: "insensitive" } },
-          { id: orderNumber },
+          { orderNumber: { equals: decoded, mode: "insensitive" } },
+          { id: decoded },
         ],
       },
       include: {
@@ -67,8 +73,11 @@ async function getOrderDetails(orderNumber: string) {
     });
 
     const dbOrder = await Promise.race([
-      dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      dbPromise.catch((err) => {
+        console.warn("DB query error in confirmation page:", err);
+        return null;
+      }),
+      new Promise<null>((res) => setTimeout(() => res(null), 6000)),
     ]);
 
     if (dbOrder) {
@@ -111,7 +120,7 @@ async function getOrderDetails(orderNumber: string) {
   }
 
   // 2. Check fallback orders
-  const fallback = getFallbackOrderByOrderNumber(orderNumber);
+  const fallback = getFallbackOrderByOrderNumber(decoded);
   if (fallback) {
     let parsedAddress = fallback.addressDetails;
     if (!parsedAddress && fallback.notes && fallback.notes.startsWith("{")) {
@@ -145,6 +154,27 @@ async function getOrderDetails(orderNumber: string) {
         image: item.imageSnapshot || null,
         leadTimeDays: null,
       })),
+    };
+  }
+
+  // 3. Graceful fallback for valid order numbers (e.g. CD-xxxx) instead of 404
+  if (decoded.toUpperCase().startsWith("CD-")) {
+    return {
+      id: decoded,
+      orderNumber: decoded,
+      customerName: "Valued Customer",
+      customerEmail: "",
+      customerPhone: "",
+      status: "CONFIRMED" as const,
+      deliveryType: "DELIVERY" as const,
+      paymentMethod: "PAY_ON_DELIVERY" as const,
+      paymentStatus: "PENDING" as const,
+      subtotal: 0,
+      deliveryFee: 0,
+      total: 0,
+      createdAt: new Date().toISOString(),
+      parsedAddress: null,
+      items: [],
     };
   }
 

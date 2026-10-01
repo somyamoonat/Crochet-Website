@@ -65,7 +65,7 @@ export default function AccountOrdersPage() {
   const fetchUserOrders = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/orders");
+      const res = await fetch("/api/orders", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.orders)) {

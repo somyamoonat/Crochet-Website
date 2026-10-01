@@ -12,6 +12,9 @@ const registerSchema = z.object({
   phone: z.string().optional(),
 });
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -34,7 +37,7 @@ export async function POST(request: NextRequest) {
       });
       const existingUser = await Promise.race([
         dbPromise.catch(() => null),
-        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+        new Promise<null>((res) => setTimeout(() => res(null), 8000)),
       ]);
 
       if (existingUser) {
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
       });
       await Promise.race([
         dbPromise.catch(() => null),
-        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+        new Promise<null>((res) => setTimeout(() => res(null), 8000)),
       ]);
     } catch (dbErr) {
       console.warn("DB offline during registration, saving to fallback store:", dbErr);
