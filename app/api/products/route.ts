@@ -67,11 +67,14 @@ export async function GET(request: NextRequest) {
     ]);
 
     const result = await Promise.race([
-      dbQueryPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      dbQueryPromise.catch((err) => {
+        console.warn("DB query error in /api/products:", err);
+        return null;
+      }),
+      new Promise<null>((res) => setTimeout(() => res(null), 8000)),
     ]);
 
-    if (result && Array.isArray(result[0]) && result[0].length > 0) {
+    if (result && Array.isArray(result[0])) {
       const [dbProducts, total] = result;
       return NextResponse.json({
         success: true,
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
           page,
           limit,
           total,
-          totalPages: Math.ceil(total / limit),
+          totalPages: Math.ceil(total / limit) || 1,
           hasMore: page * limit < total,
         },
       });

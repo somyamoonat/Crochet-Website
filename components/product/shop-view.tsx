@@ -12,7 +12,7 @@ import {
   Input,
   StitchDivider,
 } from "@/components/ui";
-import { sampleCategories, sampleProducts, SeedCategory, SeedProduct } from "@/lib/sample-data";
+import { sampleCategories, SeedCategory, SeedProduct } from "@/lib/sample-data";
 import {
   SlidersHorizontal,
   X,
@@ -20,6 +20,8 @@ import {
   ShoppingBag,
   Search,
   Filter,
+  Sparkles,
+  MessageCircle,
 } from "lucide-react";
 
 export interface ShopViewProps {
@@ -39,7 +41,7 @@ export function ShopView({
 
   // Dynamic Products and Categories State
   const [products, setProducts] = React.useState<SeedProduct[]>(
-    initialProducts || sampleProducts
+    initialProducts ?? []
   );
   const [categories, setCategories] = React.useState<SeedCategory[]>(
     initialCategories || sampleCategories
@@ -488,22 +490,54 @@ export function ShopView({
               <ProductGridSkeleton count={8} />
             ) : filteredProducts.length === 0 ? (
               /* Empty State */
-              <div className="rounded-3xl border border-dashed border-[#E0D5C5] bg-white/70 p-12 text-center space-y-4 max-w-md mx-auto my-8">
-                <div className="mx-auto h-16 w-16 rounded-full bg-[#FAF3EA] flex items-center justify-center text-stone-400">
-                  <ShoppingBag className="h-8 w-8 text-brand-primary/60" />
+              products.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-[#E0D5C5] bg-white/70 p-12 text-center space-y-4 max-w-md mx-auto my-8">
+                  <div className="mx-auto h-16 w-16 rounded-full bg-[#FAF3EA] flex items-center justify-center text-brand-primary">
+                    <Sparkles className="h-8 w-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-heading text-xl font-bold text-brand-text">
+                      New Creations Coming Soon!
+                    </h3>
+                    <p className="text-xs text-stone-500 leading-relaxed">
+                      Nitika is currently crocheting new handcrafted pieces in the studio. You can also chat directly on WhatsApp for bespoke custom orders!
+                    </p>
+                  </div>
+                  <div className="pt-2 flex justify-center">
+                    <a
+                      href="https://wa.me/919770124355?text=Hi%20Nitika!%20I%20would%20like%20to%20order%20a%20custom%20crochet%20piece."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button
+                        variant="outline"
+                        size="md"
+                        className="border-[#25D366] text-[#1FA952] hover:bg-[#E8F8EE]"
+                        leftIcon={<MessageCircle className="h-4 w-4 text-[#25D366]" />}
+                      >
+                        Custom Order on WhatsApp
+                      </Button>
+                    </a>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <h3 className="font-heading text-xl font-bold text-brand-text">
-                    No products match your filters
-                  </h3>
-                  <p className="text-xs text-stone-500 leading-relaxed">
-                    Try adjusting your category, price range, or availability filters to discover other handcrafted pieces.
-                  </p>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-[#E0D5C5] bg-white/70 p-12 text-center space-y-4 max-w-md mx-auto my-8">
+                  <div className="mx-auto h-16 w-16 rounded-full bg-[#FAF3EA] flex items-center justify-center text-stone-400">
+                    <ShoppingBag className="h-8 w-8 text-brand-primary/60" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-heading text-xl font-bold text-brand-text">
+                      No products match your filters
+                    </h3>
+                    <p className="text-xs text-stone-500 leading-relaxed">
+                      Try adjusting your category, price range, or availability filters to discover other handcrafted pieces.
+                    </p>
+                  </div>
+                  <Button variant="primary" size="md" onClick={handleResetFilters} leftIcon={<RotateCcw className="h-4 w-4" />}>
+                    Reset All Filters
+                  </Button>
                 </div>
-                <Button variant="primary" size="md" onClick={handleResetFilters} leftIcon={<RotateCcw className="h-4 w-4" />}>
-                  Reset All Filters
-                </Button>
-              </div>
+              )
             ) : (
               /* Product Grid */
               <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 sm:gap-6">

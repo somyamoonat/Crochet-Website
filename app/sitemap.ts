@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
-import { sampleCategories, sampleProducts } from "@/lib/sample-data";
+import { sampleCategories } from "@/lib/sample-data";
 import { getBaseUrl } from "@/lib/constants";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -65,24 +65,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Dynamic Products
-  let productsList: { slug: string; lastModified?: Date }[] = sampleProducts.map((p) => ({
-    slug: p.slug,
-    lastModified: new Date(),
-  }));
+  let productsList: { slug: string; lastModified?: Date }[] = [];
 
   try {
     const dbProducts = await prisma.product.findMany({
       where: { isActive: true },
       select: { slug: true, createdAt: true },
     });
-    if (dbProducts.length > 0) {
-      const dbMap = new Map<string, { slug: string; lastModified: Date }>();
-      productsList.forEach((p) => dbMap.set(p.slug, { slug: p.slug, lastModified: p.lastModified || new Date() }));
-      dbProducts.forEach((p) => dbMap.set(p.slug, { slug: p.slug, lastModified: p.createdAt }));
-      productsList = Array.from(dbMap.values());
-    }
+    productsList = dbProducts.map((p) => ({
+      slug: p.slug,
+      lastModified: p.createdAt,
+    }));
   } catch (err) {
-    console.warn("Sitemap: Database products fallback to sample data:", err);
+    console.warn("Sitemap: Database products query:", err);
   }
 
   const productRoutes: MetadataRoute.Sitemap = productsList.map((p) => ({

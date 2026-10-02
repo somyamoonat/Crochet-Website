@@ -15,7 +15,7 @@ import {
   StitchDivider,
   InstagramIcon,
 } from "@/components/ui";
-import { sampleCategories, sampleProducts, SeedCategory, SeedProduct } from "@/lib/sample-data";
+import { sampleCategories, SeedCategory, SeedProduct } from "@/lib/sample-data";
 import { INSTAGRAM_POSTS } from "@/lib/instagram";
 import {
   Heart,
@@ -34,7 +34,7 @@ interface HomeViewProps {
 
 export function HomeView({ initialProducts, initialCategories }: HomeViewProps) {
   const [products, setProducts] = React.useState<SeedProduct[]>(
-    initialProducts || sampleProducts
+    initialProducts ?? []
   );
   const [categories, setCategories] = React.useState<SeedCategory[]>(
     initialCategories || sampleCategories
@@ -359,33 +359,67 @@ export function HomeView({ initialProducts, initialCategories }: HomeViewProps) 
               </Badge>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 sm:gap-6">
-              {featuredProducts.map((product) => {
-                const category = categories.find((c) => c.slug === product.categorySlug);
-                return (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    slug={product.slug}
-                    price={product.price}
-                    compareAtPrice={product.compareAtPrice}
-                    images={product.images}
-                    stockType={product.stockType}
-                    leadTimeDays={product.leadTimeDays}
-                    categoryName={category?.name}
-                  />
-                );
-              })}
-            </div>
+            {featuredProducts.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-[#ECE2D2] bg-white/70 p-10 sm:p-12 text-center space-y-4 max-w-lg mx-auto">
+                <div className="mx-auto h-14 w-14 rounded-full bg-[#FAF1EA] flex items-center justify-center text-brand-primary">
+                  <Sparkles className="h-7 w-7" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-heading text-xl font-bold text-brand-text">
+                    New Creations Coming Soon!
+                  </h3>
+                  <p className="text-xs sm:text-sm text-stone-500 leading-relaxed">
+                    Nitika is currently crocheting fresh handcrafted pieces in the studio. You can also message directly on WhatsApp for bespoke custom orders!
+                  </p>
+                </div>
+                <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href="https://wa.me/919770124355?text=Hi%20Nitika!%20I%20would%20like%20to%20order%20a%20custom%20crochet%20piece."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="outline"
+                      size="md"
+                      className="border-[#25D366] text-[#1FA952] hover:bg-[#E8F8EE]"
+                      leftIcon={<MessageCircle className="h-4 w-4 text-[#25D366]" />}
+                    >
+                      Custom Order on WhatsApp
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 sm:gap-6">
+                  {featuredProducts.map((product) => {
+                    const category = categories.find((c) => c.slug === product.categorySlug);
+                    return (
+                      <ProductCard
+                        key={product.id}
+                        id={product.id}
+                        name={product.name}
+                        slug={product.slug}
+                        price={product.price}
+                        compareAtPrice={product.compareAtPrice}
+                        images={product.images}
+                        stockType={product.stockType}
+                        leadTimeDays={product.leadTimeDays}
+                        categoryName={category?.name}
+                      />
+                    );
+                  })}
+                </div>
 
-            <div className="text-center pt-4">
-              <Link href="/shop">
-                <Button variant="outline" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  Explore All Handcrafted Items
-                </Button>
-              </Link>
-            </div>
+                <div className="text-center pt-4">
+                  <Link href="/shop">
+                    <Button variant="outline" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                      Explore All Handcrafted Items ({products.length})
+                    </Button>
+                  </Link>
+                </div>
+              </>
+            )}
           </Container>
         </section>
 

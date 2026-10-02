@@ -46,7 +46,7 @@ export function MobileSearchModal({ isOpen, onClose }: MobileSearchModalProps) {
     async function fetchProducts() {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/products?limit=100");
+        const res = await fetch("/api/products?limit=100", { cache: "no-store" });
         if (res.ok && !isCancelled) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data)) {

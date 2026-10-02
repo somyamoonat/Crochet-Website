@@ -3,7 +3,6 @@ import path from "path";
 import { prisma } from "@/lib/prisma";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import {
-  sampleProducts,
   sampleCategories,
   SeedProduct,
   SeedCategory,
@@ -174,10 +173,10 @@ function saveFileStore<T>(fileName: string, data: T) {
 }
 
 function getLocalProducts(): SeedProduct[] {
-  if (gAdmin.__adminProducts && Array.isArray(gAdmin.__adminProducts) && gAdmin.__adminProducts.length > 0) {
+  if (gAdmin.__adminProducts && Array.isArray(gAdmin.__adminProducts)) {
     return JSON.parse(JSON.stringify(gAdmin.__adminProducts));
   }
-  const loaded = loadFileStore<SeedProduct[]>(".products-store.json", sampleProducts);
+  const loaded = loadFileStore<SeedProduct[]>(".products-store.json", []);
   gAdmin.__adminProducts = loaded;
   return JSON.parse(JSON.stringify(loaded));
 }
@@ -383,10 +382,10 @@ export async function getAdminProducts(): Promise<SeedProduct[]> {
 
     const dbProducts = await Promise.race([
       dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      new Promise<null>((res) => setTimeout(() => res(null), 8000)),
     ]);
 
-    if (dbProducts && dbProducts.length > 0) {
+    if (Array.isArray(dbProducts)) {
       return dbProducts.map((p) => ({
         id: p.id,
         name: p.name,
@@ -430,7 +429,7 @@ export async function getAdminProductById(id: string): Promise<SeedProduct | nul
 
     const dbProduct = await Promise.race([
       dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      new Promise<null>((res) => setTimeout(() => res(null), 8000)),
     ]);
 
     if (dbProduct) {
@@ -523,8 +522,11 @@ export async function createAdminProduct(input: AdminProductInput): Promise<Seed
         },
       });
       const dbProd = await Promise.race([
-        dbPromise.catch(() => null),
-        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+        dbPromise.catch((err) => {
+          console.warn("DB error in createAdminProduct:", err);
+          return null;
+        }),
+        new Promise<null>((res) => setTimeout(() => res(null), 8000)),
       ]);
       if (dbProd) {
         newProduct.id = dbProd.id;
@@ -575,10 +577,47 @@ export async function updateAdminProduct(
         include: { category: true, variants: true },
       });
 
-      await Promise.race([
-        dbPromise.catch(() => null),
-        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      const updatedDb = await Promise.race([
+        dbPromise.catch((err) => {
+          console.warn("DB update error in updateAdminProduct:", err);
+          return null;
+        }),
+        new Promise<null>((res) => setTimeout(() => res(null), 8000)),
       ]);
+
+      if (updatedDb) {
+        const list = getLocalProducts();
+        const idx = list.findIndex((p) => p.id === id || p.slug === id || p.id === updatedDb.id);
+        const mappedProduct: SeedProduct = {
+          id: updatedDb.id,
+          name: updatedDb.name,
+          slug: updatedDb.slug,
+          description: updatedDb.description,
+          price: updatedDb.price,
+          compareAtPrice: updatedDb.compareAtPrice,
+          categorySlug: updatedDb.category?.slug || input.categorySlug || "",
+          images: updatedDb.images,
+          stockType: updatedDb.stockType as "READY_TO_SHIP" | "MADE_TO_ORDER",
+          stockQty: updatedDb.stockQty,
+          leadTimeDays: updatedDb.leadTimeDays,
+          isFeatured: updatedDb.isFeatured,
+          isActive: updatedDb.isActive,
+          variants: (updatedDb.variants || []).map((v) => ({
+            name: v.name,
+            value: v.value,
+            priceDelta: v.priceDelta,
+            stockQty: v.stockQty ?? undefined,
+          })),
+        };
+
+        if (idx !== -1) {
+          list[idx] = mappedProduct;
+        } else {
+          list.push(mappedProduct);
+        }
+        setLocalProducts(list);
+        return mappedProduct;
+      }
     }
   } catch (err) {
     console.warn("DB unreachable or error in updateAdminProduct, updating local store:", err);
@@ -619,6 +658,7 @@ export async function updateAdminProduct(
 }
 
 export async function deleteAdminProduct(id: string): Promise<boolean> {
+  let dbDeleted = false;
   try {
     const existingDbProduct = await prisma.product.findFirst({
       where: {
@@ -627,11 +667,34 @@ export async function deleteAdminProduct(id: string): Promise<boolean> {
     });
 
     if (existingDbProduct) {
+      // 1. Delete dependent OrderItems referencing this product to prevent FK blocks
+      try {
+        await prisma.orderItem.deleteMany({
+          where: { productId: existingDbProduct.id },
+        });
+      } catch (e) {
+        console.warn("Could not delete dependent orderItems:", e);
+      }
+
+      // 2. Delete dependent ProductVariants
+      try {
+        await prisma.productVariant.deleteMany({
+          where: { productId: existingDbProduct.id },
+        });
+      } catch (e) {
+        console.warn("Could not delete dependent variants:", e);
+      }
+
+      // 3. Delete Product from PostgreSQL
       const dbPromise = prisma.product.delete({ where: { id: existingDbProduct.id } });
       await Promise.race([
-        dbPromise.catch(() => null),
-        new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+        dbPromise.catch((err) => {
+          console.warn("DB delete error in deleteAdminProduct:", err);
+          return null;
+        }),
+        new Promise<null>((res) => setTimeout(() => res(null), 8000)),
       ]);
+      dbDeleted = true;
     }
   } catch (err) {
     console.warn("DB unreachable or error in deleteAdminProduct, deleting from local store:", err);
@@ -641,7 +704,7 @@ export async function deleteAdminProduct(id: string): Promise<boolean> {
   const prev = list.length;
   const filtered = list.filter((p) => p.id !== id && p.slug !== id);
   setLocalProducts(filtered);
-  return filtered.length < prev;
+  return dbDeleted || filtered.length < prev;
 }
 
 /* =========================================================================

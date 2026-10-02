@@ -22,7 +22,7 @@ export async function GET(
 
     const product = await Promise.race([
       dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      new Promise<null>((res) => setTimeout(() => res(null), 8000)),
     ]);
 
     if (product) {

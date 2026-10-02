@@ -53,7 +53,7 @@ export async function getProductBySlug(slug: string): Promise<{
 
     const dbProduct = await Promise.race([
       dbPromise.catch(() => null),
-      new Promise<null>((res) => setTimeout(() => res(null), 1200)),
+      new Promise<null>((res) => setTimeout(() => res(null), 8000)),
     ]);
 
     if (dbProduct) {
@@ -94,7 +94,7 @@ export async function getProductBySlug(slug: string): Promise<{
 
       const dbRelated = await Promise.race([
         dbRelatedPromise.catch(() => []),
-        new Promise<never[]>((res) => setTimeout(() => res([]), 1200)),
+        new Promise<never[]>((res) => setTimeout(() => res([]), 8000)),
       ]);
 
       const related: SeedProduct[] = (dbRelated || []).map((p) => ({
