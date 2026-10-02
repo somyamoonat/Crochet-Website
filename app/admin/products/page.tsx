@@ -15,6 +15,7 @@ import {
   Package,
   Star,
   EyeOff,
+  ChevronLeft,
 } from "lucide-react";
 import { SeedProduct } from "@/lib/sample-data";
 
@@ -86,6 +87,17 @@ export default function AdminProductsPage() {
 
       <main className="py-6 sm:py-10">
         <Container size="xl" className="space-y-6">
+          {/* Back to Dashboard Navigation */}
+          <div>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-brand-primary bg-white hover:bg-[#FAF1EA] px-3.5 py-1.5 rounded-full border border-stone-200/90 shadow-2xs transition"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Back to Dashboard</span>
+            </Link>
+          </div>
+
           {/* Header & New Product CTA */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-5">
             <div>

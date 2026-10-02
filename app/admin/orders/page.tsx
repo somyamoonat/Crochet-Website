@@ -13,8 +13,68 @@ import {
   ExternalLink,
   Save,
   X,
+  ChevronLeft,
+  MapPin,
+  FileText,
 } from "lucide-react";
 import { FallbackOrder } from "@/lib/fallback-orders";
+
+function getOrderAddressInfo(order: FallbackOrder) {
+  const isPickup = order.deliveryType === "PICKUP";
+  let line1 = "";
+  let line2 = "";
+  let city = "Ratlam";
+  let pincode = "";
+  let customerNotes = "";
+
+  // 1. Try to read from structured addressDetails if present
+  if (order.addressDetails) {
+    line1 = order.addressDetails.line1 || "";
+    line2 = order.addressDetails.line2 || "";
+    city = order.addressDetails.city || "Ratlam";
+    pincode = order.addressDetails.pincode || "";
+  }
+
+  // 2. Try to parse from order.notes (checkout stores delivery address JSON in notes)
+  if (order.notes) {
+    const raw = order.notes.trim();
+    if (raw.startsWith("{") && raw.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.line1) line1 = parsed.line1;
+        if (parsed.line2) line2 = parsed.line2;
+        if (parsed.city) city = parsed.city;
+        if (parsed.pincode) pincode = parsed.pincode;
+        if (parsed.customerNotes) customerNotes = parsed.customerNotes;
+        if (parsed.note && !customerNotes) customerNotes = parsed.note;
+      } catch {
+        customerNotes = raw;
+      }
+    } else {
+      customerNotes = raw;
+    }
+  }
+
+  const parts = [line1, line2].filter(Boolean);
+  let formattedAddress = "";
+  if (isPickup) {
+    formattedAddress = "Self-Pickup at Nitika Tanted's Studio (Station Road, Ratlam, MP)";
+  } else if (parts.length > 0) {
+    formattedAddress = `${parts.join(", ")}, ${city}${pincode ? ` - ${pincode}` : ""}`;
+  } else {
+    formattedAddress = "Ratlam, Madhya Pradesh";
+  }
+
+  return {
+    isPickup,
+    line1,
+    line2,
+    city,
+    pincode,
+    customerNotes,
+    formattedAddress,
+  };
+}
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<FallbackOrder[]>([]);
@@ -26,7 +86,6 @@ export default function AdminOrdersPage() {
   // Selected Order for Modal / Drawer
   const [selectedOrder, setSelectedOrder] = useState<FallbackOrder | null>(null);
   const [editingStatus, setEditingStatus] = useState<OrderStatusType>("RECEIVED");
-  const [editingNotes, setEditingNotes] = useState("");
   const [updating, setUpdating] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
@@ -63,7 +122,6 @@ export default function AdminOrdersPage() {
   const openOrderModal = (order: FallbackOrder) => {
     setSelectedOrder(order);
     setEditingStatus(order.status);
-    setEditingNotes(order.notes || "");
     setUpdateSuccess(false);
   };
 
@@ -78,7 +136,7 @@ export default function AdminOrdersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: editingStatus,
-          notes: editingNotes,
+          notes: selectedOrder.notes,
         }),
       });
 
@@ -89,14 +147,13 @@ export default function AdminOrdersPage() {
         setOrders(
           orders.map((o) =>
             o.id === selectedOrder.id
-              ? { ...o, status: editingStatus, notes: editingNotes }
+              ? { ...o, status: editingStatus }
               : o
           )
         );
         setSelectedOrder({
           ...selectedOrder,
           status: editingStatus,
-          notes: editingNotes,
         });
       } else {
         alert(data.error || "Failed to update order status.");
@@ -133,6 +190,17 @@ export default function AdminOrdersPage() {
 
       <main className="py-6 sm:py-10">
         <Container size="xl" className="space-y-6">
+          {/* Back to Dashboard Navigation */}
+          <div>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-brand-primary bg-white hover:bg-[#FAF1EA] px-3.5 py-1.5 rounded-full border border-stone-200/90 shadow-2xs transition"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Back to Dashboard</span>
+            </Link>
+          </div>
+
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-5">
             <div>
@@ -303,20 +371,30 @@ export default function AdminOrdersPage() {
           {selectedOrder && (
             <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-2xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
               <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-[#ECE2D2] shadow-2xl p-6 sm:p-8 space-y-6">
-                {/* Header */}
+                {/* Header with Back button */}
                 <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-                  <div>
-                    <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
-                      Order Management
-                    </span>
-                    <h2 className="font-mono text-xl font-extrabold text-brand-primary">
-                      #{selectedOrder.orderNumber}
-                    </h2>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedOrder(null)}
+                      className="p-1.5 rounded-xl text-stone-500 hover:text-brand-primary hover:bg-[#FAF1EA] transition sm:hidden"
+                      title="Back to Orders"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <div>
+                      <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
+                        Order Management
+                      </span>
+                      <h2 className="font-mono text-xl font-extrabold text-brand-primary">
+                        #{selectedOrder.orderNumber}
+                      </h2>
+                    </div>
                   </div>
 
                   <button
                     onClick={() => setSelectedOrder(null)}
                     className="p-2 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
+                    title="Close"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -325,7 +403,7 @@ export default function AdminOrdersPage() {
                 {updateSuccess && (
                   <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-bold text-emerald-800 flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                    Order status and notes successfully updated!
+                    Order lifecycle status successfully updated!
                   </div>
                 )}
 
@@ -337,7 +415,7 @@ export default function AdminOrdersPage() {
                   />
                 </div>
 
-                {/* Status Update Form */}
+                {/* Status Update Actions */}
                 <div className="space-y-4 bg-stone-50/80 p-5 rounded-2xl border border-stone-200/80">
                   <h3 className="font-heading text-sm font-bold text-brand-text">
                     Update Order Lifecycle Status
@@ -360,21 +438,7 @@ export default function AdminOrdersPage() {
                     ))}
                   </div>
 
-                  {/* Internal Notes */}
-                  <div className="space-y-1.5 pt-2">
-                    <label className="text-xs font-bold text-stone-700 block">
-                      Internal Founder Notes (Private)
-                    </label>
-                    <textarea
-                      rows={2}
-                      placeholder="e.g. Wrapped in pastel tissue paper. Customer requested pickup Saturday morning..."
-                      value={editingNotes}
-                      onChange={(e) => setEditingNotes(e.target.value)}
-                      className="w-full rounded-xl border border-stone-300 p-2.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center justify-between pt-2">
                     <Button
                       type="button"
                       variant="primary"
@@ -384,7 +448,7 @@ export default function AdminOrdersPage() {
                       disabled={updating}
                       leftIcon={<Save className="h-4 w-4" />}
                     >
-                      Save Status &amp; Notes
+                      Save Status
                     </Button>
 
                     {/* WhatsApp link to customer */}
@@ -409,6 +473,61 @@ export default function AdminOrdersPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Clean Customer & Delivery Address Details (Human-readable, no JSON code) */}
+                {(() => {
+                  const addr = getOrderAddressInfo(selectedOrder);
+                  return (
+                    <div className="rounded-2xl border border-[#ECE2D2] bg-white p-4 sm:p-5 space-y-3 shadow-2xs">
+                      <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                        <div className="flex items-center gap-2 font-bold text-xs sm:text-sm text-brand-text">
+                          <MapPin className="h-4 w-4 text-brand-primary" />
+                          <span>{addr.isPickup ? "Pickup Location" : "Delivery Address"}</span>
+                        </div>
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#FAF1EA] text-brand-primary border border-brand-primary/20">
+                          {addr.isPickup ? "Store Pickup" : "Doorstep Delivery"}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div className="flex items-start gap-2">
+                            <span className="text-stone-400 font-semibold w-16 shrink-0">Name:</span>
+                            <strong className="text-brand-text font-bold">
+                              {selectedOrder.guestName || "Customer"}
+                            </strong>
+                          </div>
+
+                          <div className="flex items-start gap-2">
+                            <span className="text-stone-400 font-semibold w-16 shrink-0">Phone:</span>
+                            <span className="font-mono text-stone-800 font-semibold">
+                              {selectedOrder.guestPhone || "No phone provided"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2 pt-2 border-t border-stone-100">
+                          <span className="text-stone-400 font-semibold w-16 shrink-0">Address:</span>
+                          <p className="text-stone-800 font-medium leading-relaxed bg-[#FAF6EF]/70 p-2.5 rounded-xl border border-stone-200/80 flex-1">
+                            {addr.formattedAddress}
+                          </p>
+                        </div>
+
+                        {addr.customerNotes && (
+                          <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1 mt-2">
+                            <div className="flex items-center gap-1.5 font-bold text-[11px] text-amber-800 uppercase tracking-wider">
+                              <FileText className="h-3.5 w-3.5 text-amber-700" />
+                              <span>Customer Request / Note</span>
+                            </div>
+                            <p className="italic font-medium text-stone-700 pl-5">
+                              &ldquo;{addr.customerNotes}&rdquo;
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Items & Customer Breakdown */}
                 <div className="space-y-3">
@@ -436,7 +555,7 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                {/* Footer with Public Link */}
+                {/* Footer with Public Link and Back button */}
                 <div className="flex items-center justify-between pt-2 border-t border-stone-100 text-xs text-stone-500">
                   <Link
                     href={`/order/${encodeURIComponent(selectedOrder.orderNumber)}/confirmation`}
@@ -446,8 +565,15 @@ export default function AdminOrdersPage() {
                     Open Public Confirmation Page
                     <ExternalLink className="h-3 w-3" />
                   </Link>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(null)}>
-                    Close
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedOrder(null)}
+                    leftIcon={<ChevronLeft className="h-4 w-4" />}
+                    className="text-xs font-bold"
+                  >
+                    Back to Orders
                   </Button>
                 </div>
               </div>

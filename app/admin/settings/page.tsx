@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { Container, Card, Button, Input, Textarea } from "@/components/ui";
 import {
@@ -10,6 +11,7 @@ import {
   Save,
   MapPin,
   Phone,
+  ChevronLeft,
 } from "lucide-react";
 import { StoreSettings } from "@/lib/admin-store";
 
@@ -95,6 +97,17 @@ export default function AdminSettingsPage() {
 
       <main className="py-6 sm:py-10">
         <Container size="md" className="space-y-6">
+          {/* Back to Dashboard Navigation */}
+          <div>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-brand-primary bg-white hover:bg-[#FAF1EA] px-3.5 py-1.5 rounded-full border border-stone-200/90 shadow-2xs transition"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Back to Dashboard</span>
+            </Link>
+          </div>
+
           {/* Header */}
           <div className="border-b border-stone-200 pb-5">
             <div className="flex items-center gap-2 mb-1">
